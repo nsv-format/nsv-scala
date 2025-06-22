@@ -15,19 +15,15 @@ object Nsv {
 
   private val Separator = "\n---\n"
 
-  private def dataFromString(s: String): Seq[Seq[String]] = {
+  private def dataFromString(s: String): Seq[Seq[String]] =
     s.split("\n\n").toSeq.map(row => row.split("\n").toSeq.map(unescape))
-  }
 
-  private def dataToString(seq: Seq[Seq[String]]): String = {
+  private def dataToString(seq: Seq[Seq[String]]): String =
     seq.map(row => row.map(escape).mkString("\n")).mkString("\n\n")
-  }
 
-  private def escape(s: String): String = {
+  private def escape(s: String): String =
     if (s == "") { "\\" } else { s.replace("\\", "\\\\").replace("\n", "\\n") }
-  }
 
-  private def unescape(s: String): String = {
+  private def unescape(s: String): String =
     if (s == "\\") { "" } else { s.replace("\\n", "\n").replace("\\\\", "\\") }
-  }
 }
