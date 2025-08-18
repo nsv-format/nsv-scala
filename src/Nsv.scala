@@ -1,29 +1,74 @@
 package org.nsvformat
 
-final case class Nsv(
-  metadata: String,
-  data: Seq[Seq[String]],
-) {
-  def asString = s"$metadata${Nsv.Separator}${Nsv.dataToString(data)}"
-}
+import scala.collection.mutable.ArrayBuffer
 
 object Nsv {
-  def fromString(s: String): Nsv = {
-    val Array(metadata, data) = s.split(Separator, 2)
-    Nsv(metadata, dataFromString(data))
+  def loads(s: String): Seq[Seq[String]] = {
+    val data = ArrayBuffer[ArrayBuffer[String]]()
+    var row = ArrayBuffer[String]()
+    var start = 0
+    for ((c, pos) <- s.zipWithIndex) {
+      if (c == '\n') {
+        if (pos - start >= 1) {
+          row += unescape(s.substring(start, pos))
+        } else {
+          data += row
+          row = ArrayBuffer[String]()
+        }
+        start = pos + 1
+      }
+    }
+    data.map(_.toSeq).toSeq
   }
 
-  private val Separator = "\n---\n"
-
-  private def dataFromString(s: String): Seq[Seq[String]] =
-    s.split("\n\n").toSeq.map(row => row.split("\n").toSeq.map(unescape))
-
-  private def dataToString(seq: Seq[Seq[String]]): String =
-    seq.map(row => row.map(escape).mkString("\n")).mkString("\n\n")
+  def dumps(data: Seq[Seq[String]]): String = {
+    val lines = ArrayBuffer[String]()
+    for (row <- data) {
+      for (cell <- row) {
+        lines += escape(cell)
+      }
+      lines += ""
+    }
+    lines.map(_ + "\n").mkString
+  }
 
   private def escape(s: String): String =
-    if (s == "") { "\\" } else { s.replace("\\", "\\\\").replace("\n", "\\n") }
+    if (s == "") {
+      "\\"
+    } else if (s.contains('\n') || s.contains('\\')) {
+      s.replace("\\", "\\\\").replace("\n", "\\n")
+    } else {
+      s
+    }
 
-  private def unescape(s: String): String =
-    if (s == "\\") { "" } else { s.replace("\\n", "\n").replace("\\\\", "\\") }
+  private def unescape(s: String): String = {
+    if (s == "\\") {
+      return ""
+    }
+    if (!s.contains('\\')) {
+      return s
+    }
+    val out = new StringBuilder
+    var escaped = false
+    for (c <- s) {
+      if (escaped) {
+        if (c == 'n') {
+          out.append('\n')
+        } else if (c == '\\') {
+          out.append('\\')
+        } else {
+          out.append('\\')
+          out.append(c)
+        }
+        escaped = false
+      } else {
+        if (c == '\\') {
+          escaped = true
+        } else {
+          out.append(c)
+        }
+      }
+    }
+    out.toString
+  }
 }
