@@ -32,7 +32,7 @@ object Nsv {
     lines.map(_ + "\n").mkString
   }
 
-  private def escape(s: String): String =
+  def escape(s: String): String =
     if (s == "") {
       "\\"
     } else if (s.contains('\n') || s.contains('\\')) {
@@ -41,7 +41,7 @@ object Nsv {
       s
     }
 
-  private def unescape(s: String): String = {
+  def unescape(s: String): String = {
     if (s == "\\") {
       return ""
     }
