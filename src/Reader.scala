@@ -25,37 +25,33 @@ class Reader(reader: java.io.Reader) extends Iterator[Seq[String]] {
   }
 
   @scala.annotation.tailrec
-  private def tryReadRow(): Option[Seq[String]] = {
+  private def tryReadRow(): Option[Seq[String]] =
     tryReadLine() match {
-      case Some(line) =>
-        if (line.isEmpty) {
-          // Row terminator found
-          val row = rowBuffer.toSeq
-          rowBuffer.clear()
-          Some(row)
-        } else {
-          // Cell complete, add to row
-          rowBuffer += Nsv.unescape(line)
-          tryReadRow()  // tail recursive call
-        }
-      case None =>
-        // EOF, row incomplete, preserve rowBuffer for next call
-        None
+      case None => None // Incomplete row at EOF, preserve rowBuffer for next call
+      case Some("") => // Row complete, return
+        val row = rowBuffer.toSeq
+        rowBuffer.clear()
+        Some(row)
+      case Some(line) => // Cell complete, add to row
+        rowBuffer += Nsv.unescape(line)
+        tryReadRow()
     }
-  }
 
   def hasNext: Boolean = {
-    if (cachedRow.isDefined) return true
-    cachedRow = tryReadRow()
+    if (cachedRow.isEmpty) {
+      cachedRow = tryReadRow()
+    }
     cachedRow.isDefined
   }
 
-  def next(): Seq[String] = {
-    if (!hasNext) throw new NoSuchElementException
-    val result = cachedRow.get
-    cachedRow = None
-    result
-  }
+  def next(): Seq[String] =
+    if (hasNext) {
+      val result = cachedRow.get
+      cachedRow = None
+      result
+    } else {
+      throw new NoSuchElementException
+    }
 }
 
 object Reader {
