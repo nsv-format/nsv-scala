@@ -4,11 +4,10 @@ import scala.collection.mutable.ArrayBuffer
 
 class Reader(reader: java.io.Reader) extends Iterator[Seq[String]] {
   private val lineBuffer = new StringBuilder
+  private val rowBuffer = ArrayBuffer[String]()
   private var cachedRow: Option[Seq[String]] = None
-  private var exhausted = false
 
-  private def readLine(): Option[String] = {
-    lineBuffer.clear()
+  private def tryReadLine(): Option[String] = {
     var c = reader.read()
 
     while (c != -1 && c != '\n') {
@@ -16,36 +15,39 @@ class Reader(reader: java.io.Reader) extends Iterator[Seq[String]] {
       c = reader.read()
     }
 
-    if (c == -1 && lineBuffer.isEmpty) None else Some(lineBuffer.toString)
+    if (c == '\n') {
+      val line = lineBuffer.toString
+      lineBuffer.clear()
+      Some(line)
+    } else {
+      None // EOF, line incomplete, preserve lineBuffer for next call
+    }
   }
 
-  private def readRow(): Option[Seq[String]] = {
-    val acc = ArrayBuffer[String]()
-    var line = readLine()
-
-    while (line.isDefined) {
-      val lineStr = line.get
-      if (lineStr.isEmpty) {
-        return Some(acc.toSeq)
-      }
-      acc += Nsv.unescape(lineStr)
-      line = readLine()
+  @scala.annotation.tailrec
+  private def tryReadRow(): Option[Seq[String]] = {
+    tryReadLine() match {
+      case Some(line) =>
+        if (line.isEmpty) {
+          // Row terminator found
+          val row = rowBuffer.toSeq
+          rowBuffer.clear()
+          Some(row)
+        } else {
+          // Cell complete, add to row
+          rowBuffer += Nsv.unescape(line)
+          tryReadRow()  // tail recursive call
+        }
+      case None =>
+        // EOF, row incomplete, preserve rowBuffer for next call
+        None
     }
-
-    if (acc.nonEmpty) Some(acc.toSeq) else None
   }
 
   def hasNext: Boolean = {
     if (cachedRow.isDefined) return true
-    if (exhausted) return false
-
-    cachedRow = readRow()
-    if (cachedRow.isEmpty) {
-      exhausted = true
-      false
-    } else {
-      true
-    }
+    cachedRow = tryReadRow()
+    cachedRow.isDefined
   }
 
   def next(): Seq[String] = {
