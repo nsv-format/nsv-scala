@@ -52,20 +52,18 @@ object Nsv {
     var escaped = false
     for (c <- s) {
       if (escaped) {
-        if (c == 'n') {
-          out.append('\n')
-        } else if (c == '\\') {
-          out.append('\\')
-        } else {
-          out.append('\\')
-          out.append(c)
+        c match {
+          case 'n' => out.append('\n')
+          case '\\' => out.append('\\')
+          case c =>
+            out.append('\\')
+            out.append(c)
         }
         escaped = false
       } else {
-        if (c == '\\') {
-          escaped = true
-        } else {
-          out.append(c)
+        c match {
+          case '\\' => escaped = true
+          case c => out.append(c)
         }
       }
     }
