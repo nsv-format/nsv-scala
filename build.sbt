@@ -1,5 +1,5 @@
 scalaVersion := "3.3.3"
-version := "0.2.1"
+version := "0.3.0"  // still pre-publish
 organization := "org.nsv-format"
 name := "nsv-scala"
 

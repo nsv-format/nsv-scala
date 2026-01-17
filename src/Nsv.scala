@@ -3,7 +3,7 @@ package org.nsvformat
 import scala.collection.mutable.ArrayBuffer
 
 object Nsv {
-  def loads(s: String): Seq[Seq[String]] = {
+  def decode(s: String): Seq[Seq[String]] = {
     val data = ArrayBuffer[ArrayBuffer[String]]()
     var row = ArrayBuffer[String]()
     var start = 0
@@ -21,7 +21,7 @@ object Nsv {
     data.map(_.toSeq).toSeq
   }
 
-  def dumps(data: Seq[Seq[String]]): String = {
+  def encode(data: Seq[Seq[String]]): String = {
     val lines = ArrayBuffer[String]()
     for (row <- data) {
       for (cell <- row) {
