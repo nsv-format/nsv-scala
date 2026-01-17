@@ -4,10 +4,10 @@ import scala.collection.mutable.ArrayBuffer
 
 class Reader(reader: java.io.Reader) extends Iterator[Seq[String]] {
   private val lineBuffer = new StringBuilder
-  private var eof = false
+  private var cachedRow: Option[Seq[String]] = None
+  private var exhausted = false
 
-  private def readLine(): String = {
-    if (eof) return null
+  private def readLine(): Option[String] = {
     lineBuffer.clear()
     var c = reader.read()
 
@@ -16,35 +16,43 @@ class Reader(reader: java.io.Reader) extends Iterator[Seq[String]] {
       c = reader.read()
     }
 
-    if (c == -1) {
-      eof = true
-      if (lineBuffer.isEmpty) null else lineBuffer.toString
-    } else {
-      lineBuffer.append('\n')
-      lineBuffer.toString
-    }
+    if (c == -1 && lineBuffer.isEmpty) None else Some(lineBuffer.toString)
   }
 
-  def hasNext: Boolean = !eof
-
-  def next(): Seq[String] = {
+  private def readRow(): Option[Seq[String]] = {
     val acc = ArrayBuffer[String]()
     var line = readLine()
 
-    while (line != null) {
-      if (line == "\n") {
-        return acc.toSeq
+    while (line.isDefined) {
+      val lineStr = line.get
+      if (lineStr.isEmpty) {
+        return Some(acc.toSeq)
       }
-      val stripped = if (line.endsWith("\n")) line.dropRight(1) else line
-      acc += Nsv.unescape(stripped)
+      acc += Nsv.unescape(lineStr)
       line = readLine()
     }
 
-    if (acc.nonEmpty) {
-      acc.toSeq
+    if (acc.nonEmpty) Some(acc.toSeq) else None
+  }
+
+  def hasNext: Boolean = {
+    if (cachedRow.isDefined) return true
+    if (exhausted) return false
+
+    cachedRow = readRow()
+    if (cachedRow.isEmpty) {
+      exhausted = true
+      false
     } else {
-      throw new NoSuchElementException
+      true
     }
+  }
+
+  def next(): Seq[String] = {
+    if (!hasNext) throw new NoSuchElementException
+    val result = cachedRow.get
+    cachedRow = None
+    result
   }
 }
 

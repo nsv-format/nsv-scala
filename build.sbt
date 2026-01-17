@@ -11,6 +11,8 @@ Compile / managedResourceDirectories := Nil
 Compile / resourceDirectory := baseDirectory.value / "resources"
 
 Test / managedSourceDirectories := Nil
-Test / unmanagedSourceDirectories := Nil
+Test / scalaSource := baseDirectory.value / "test"
+
+libraryDependencies += "org.scalameta" %% "munit" % "1.2.1" % Test
 
 idePackagePrefix := Some("org.nsvformat")
