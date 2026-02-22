@@ -24,6 +24,6 @@ jobs:
         uses: sbt/setup-sbt@v1
 
       - name: Publish package
-        run: sbt publish
+        run: sbt +publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

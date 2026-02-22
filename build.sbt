@@ -1,4 +1,5 @@
 scalaVersion := "3.3.3"
+crossScalaVersions := Seq("2.13.14", "3.3.3")
 version := "0.3.0"  // still pre-publish
 organization := "org.nsv-format"
 name := "nsv-scala"
