@@ -15,12 +15,6 @@ credentials += Credentials(
 libraryDependencies += "org.nsv-format" %% "nsv-scala" % "0.3.0"
 ```
 
-For local development:
-
-```sh
-sbt publishLocal
-```
-
 ## Usage
 
 ### Basic encoding/decoding
