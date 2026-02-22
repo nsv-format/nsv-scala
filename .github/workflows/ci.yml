@@ -12,6 +12,9 @@ jobs:
       matrix:
         java-version: ['11', '17', '21', '25']
         scala-version: ['2.13.14', '3.3.7', '3.8.1']
+        exclude:
+          - java-version: '11'
+            scala-version: '3.8.1'
     name: Test (Scala ${{ matrix.scala-version }}, Java ${{ matrix.java-version }})
     steps:
       - uses: actions/checkout@v4
