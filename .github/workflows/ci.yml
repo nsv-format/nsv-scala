@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version: ['11', '17', '21', '25']
+        scala-version: ['2.13.14', '3.3.7', '3.8.1']
+        exclude:
+          - java-version: '11'
+            scala-version: '3.8.1'
+    name: Test (Scala ${{ matrix.scala-version }}, Java ${{ matrix.java-version }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+
+      - name: Set up sbt
+        uses: sbt/setup-sbt@v1
+
+      - name: Run tests
+        run: sbt ++${{ matrix.scala-version }} test

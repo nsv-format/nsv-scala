@@ -4,11 +4,15 @@ Scala implementation of the [NSV (Newline-Separated Values)](https://nsv-format.
 
 ## Installation
 
-This is intended for local use only at the time, so:
+Maven Central publishing is planned. For now, the package is available via [GitHub Packages](https://github.com/nsv-format/nsv-scala/packages), which requires a GitHub account and a personal access token with `read:packages` scope.
 
-```sh
-rm -rf ~/.ivy2/local/org.nsv-format
-sbt publishLocal
+```scala
+resolvers += "GitHub nsv-format" at "https://maven.pkg.github.com/nsv-format/nsv-scala"
+credentials += Credentials(
+  "GitHub Package Registry", "maven.pkg.github.com", "_", sys.env("GITHUB_TOKEN")
+)
+
+libraryDependencies += "org.nsv-format" %% "nsv-scala" % "0.3.0"
 ```
 
 ## Usage
