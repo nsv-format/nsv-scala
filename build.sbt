@@ -38,7 +38,6 @@ scmInfo := Some(
     Some("scm:git:ssh://github.com:nsv-format/nsv-scala.git")
   )
 )
-// TODO: update developers with real maintainer info before publishing to Central
 developers := List(
   Developer("nsv-format", "nsv-format", "", url("https://github.com/nsv-format"))
 )
