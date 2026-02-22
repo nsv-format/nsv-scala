@@ -4,10 +4,24 @@ Scala implementation of the [NSV (Newline-Separated Values)](https://nsv-format.
 
 ## Installation
 
-This is intended for local use only at the time, so:
+Published to [GitHub Packages](https://github.com/nsv-format/nsv-scala/packages). Add the resolver and dependency to your `build.sbt`:
+
+```scala
+resolvers += "GitHub nsv-format" at "https://maven.pkg.github.com/nsv-format/nsv-scala"
+credentials += Credentials(
+  "GitHub Package Registry", "maven.pkg.github.com", "_", sys.env("GITHUB_TOKEN")
+)
+
+// Scala 3
+libraryDependencies += "org.nsv-format" %% "nsv-scala" % "0.3.0"
+
+// Scala 2.13
+libraryDependencies += "org.nsv-format" %% "nsv-scala" % "0.3.0"
+```
+
+For local development:
 
 ```sh
-rm -rf ~/.ivy2/local/org.nsv-format
 sbt publishLocal
 ```
 
