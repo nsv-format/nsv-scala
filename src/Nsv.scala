@@ -18,6 +18,12 @@ object Nsv {
         start = pos + 1
       }
     }
+    if (start < s.length) {
+      row += unescape(s.substring(start))
+    }
+    if (row.nonEmpty) {
+      data += row
+    }
     data.map(_.toSeq).toSeq
   }
 
