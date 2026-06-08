@@ -79,4 +79,10 @@ class TestDecode extends munit.FunSuite {
     val expected = Seq(Seq(""))
     assertEquals(Nsv.decode(input), expected)
   }
+
+  test("decode no trailing newline") {
+    val input = "a\nb\nc\n\nd\ne\nf"
+    val expected = Seq(Seq("a", "b", "c"), Seq("d", "e", "f"))
+    assertEquals(Nsv.decode(input), expected)
+  }
 }
