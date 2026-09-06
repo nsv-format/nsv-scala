@@ -2,23 +2,41 @@ package org.nsvformat
 
 import scala.collection.mutable.ArrayBuffer
 
-class Reader(reader: java.io.Reader) extends Iterator[Seq[String]] {
+class Reader(reader: java.io.Reader, bufferSize: Int = 8192) extends Iterator[Seq[String]] {
   private val lineBuffer = new StringBuilder
   private val rowBuffer = ArrayBuffer[String]()
   private var cachedRow: Option[Seq[String]] = None
 
-  @scala.annotation.tailrec
-  private def tryReadLine(): Option[String] =
-    reader.read() match {
-      case -1 => None // Incomplete line at EOF, preserve lineBuffer for next call
-      case '\n' => // Line complete, return
-        val line = lineBuffer.toString
-        lineBuffer.clear()
-        Some(line)
-      case c =>  // Keep reading
-        lineBuffer.append(c.toChar)
-        tryReadLine()
+  private val buf = new Array[Char](bufferSize)
+  private var bufPos = 0
+  private var bufLen = 0
+
+  private def tryReadLine(): Option[String] = {
+    while (true) {
+      var i = bufPos
+      while (i < bufLen) {
+        if (buf(i) == '\n') {
+          // Line complete, return
+          lineBuffer.appendAll(buf, bufPos, i - bufPos)
+          bufPos = i + 1
+          val line = lineBuffer.toString
+          lineBuffer.clear()
+          return Some(line)
+        }
+        i += 1
+      }
+      // Keep reading
+      lineBuffer.appendAll(buf, bufPos, bufLen - bufPos)
+      bufLen = reader.read(buf, 0, buf.length)
+      bufPos = 0
+      if (bufLen == -1) {
+        // Incomplete line at EOF, preserve lineBuffer for next call
+        bufLen = 0
+        return None
+      }
     }
+    None // unreachable
+  }
 
   @scala.annotation.tailrec
   private def tryReadRow(): Option[Seq[String]] =
@@ -52,8 +70,8 @@ class Reader(reader: java.io.Reader) extends Iterator[Seq[String]] {
 
 object Reader {
   def fromFile(file: java.io.File): Reader =
-    new Reader(new java.io.BufferedReader(new java.io.FileReader(file)))
+    new Reader(new java.io.FileReader(file))
 
   def fromPath(path: java.nio.file.Path): Reader =
-    new Reader(new java.io.BufferedReader(new java.io.FileReader(path.toFile)))
+    new Reader(new java.io.FileReader(path.toFile))
 }
