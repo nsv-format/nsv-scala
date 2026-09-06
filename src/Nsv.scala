@@ -28,15 +28,15 @@ object Nsv {
   }
 
   def encode(data: Seq[Seq[String]]): String = {
-    val sb = new StringBuilder
+    val buffer = new StringBuilder
     for (row <- data) {
       for (cell <- row) {
-        sb.append(escape(cell))
-        sb.append('\n')
+        buffer.append(escape(cell))
+        buffer.append('\n')
       }
-      sb.append('\n')
+      buffer.append('\n')
     }
-    sb.toString
+    buffer.toString
   }
 
   def escape(s: String): String =
