@@ -7,16 +7,16 @@ object Nsv {
     val data = ArrayBuffer[ArrayBuffer[String]]()
     var row = ArrayBuffer[String]()
     var start = 0
-    for ((c, pos) <- s.zipWithIndex) {
-      if (c == '\n') {
-        if (pos - start >= 1) {
-          row += unescape(s.substring(start, pos))
-        } else {
-          data += row
-          row = ArrayBuffer[String]()
-        }
-        start = pos + 1
+    var pos = s.indexOf('\n', start)
+    while (pos >= 0) {
+      if (pos > start) {
+        row += unescape(s.substring(start, pos))
+      } else {
+        data += row
+        row = ArrayBuffer[String]()
       }
+      start = pos + 1
+      pos = s.indexOf('\n', start)
     }
     if (start < s.length) {
       row += unescape(s.substring(start))
@@ -28,14 +28,15 @@ object Nsv {
   }
 
   def encode(data: Seq[Seq[String]]): String = {
-    val lines = ArrayBuffer[String]()
+    val sb = new StringBuilder
     for (row <- data) {
       for (cell <- row) {
-        lines += escape(cell)
+        sb.append(escape(cell))
+        sb.append('\n')
       }
-      lines += ""
+      sb.append('\n')
     }
-    lines.map(_ + "\n").mkString
+    sb.toString
   }
 
   def escape(s: String): String =
